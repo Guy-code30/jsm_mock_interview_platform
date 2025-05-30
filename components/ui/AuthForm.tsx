@@ -19,9 +19,8 @@ import { Button } from "@/components/ui/button";
 import { Link as LucideLink } from "lucide-react"; // Alias the lucide-react Link for icons if needed
 import { toast } from "sonner";
 import FormField from "./FormField"; // Import your FormField component
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "@firebase/auth";
 import { auth } from "@/firebase/client";
-import { sign } from "crypto";
 import { signIn, signUp } from "@/lib/actions/auth.action";
 
 
@@ -51,14 +50,7 @@ const AuthForm = ({ type }: { type: FormType }) => {
         },
     });
 
-    // interface AuthFormValues {
-    //     username: string;
-    //     email: string;
-    //     password: string;
-    //     name?: string; // Optional for sign-in
-    // }
 
-    // async function onSubmit(values: AuthFormValues) { Deepseek inserted this function to handle form submission
     async function onSubmit(values: z.infer<typeof formSchema>) {
         try {
             if (type === "sign-up") {
@@ -121,7 +113,7 @@ const AuthForm = ({ type }: { type: FormType }) => {
                     <Image src="/logo.svg" alt="logo" height={32} width={38} />
                     <h2 className="text-primary-100">PrepWise</h2>
                 </div>
-                <h3>Practice job interview with Ai</h3>
+                <h3>Practice job interview with AI</h3>
 
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="w-full space-y-6 mt-4 form">

@@ -1,6 +1,7 @@
 "use server";
 
 import { auth, db } from "@/firebase/admin";
+import { get } from "http";
 import { cookies } from "next/headers";
 
 const ONE_WEEK = 60 * 60 * 24 * 7; // 7 days in milliseconds
@@ -48,12 +49,12 @@ export async function signIn(params: SignInParams) {
   try {
     const userRecord = await auth.getUserByEmail(email);
 
-    if (!userRecord) 
+    if (!userRecord)
       return {
         success: false,
         message: "User not found. Create an account first.",
       };
-    
+
     await setSessionCookie(idToken);
   } catch (error: any) {
     console.log("");
@@ -77,4 +78,33 @@ export async function setSessionCookie(idToken: string) {
     path: "/",
     sameSite: "lax",
   });
+}
+
+export async function getCurrentUser(): Promise<User | null> {
+  const cookieStore = await cookies();
+  const sessionCookie = cookieStore.get("session")?.value;
+
+  if (!sessionCookie) return null;
+
+  try {
+    const decodedClaims = await auth.verifySessionCookie(sessionCookie, true);
+    const userRecord = await db
+      .collection("users")
+      .doc(decodedClaims.uid)
+      .get();
+    if (!userRecord.exists) return null;
+    return {
+      ...userRecord.data(),
+      id: userRecord.id,
+    } as User;
+  } catch (error: any) {
+    console.error("Error verifying session cookie", error);
+    return null;
+  }
+}
+
+export async function isAuthenticated() {
+  const user = await getCurrentUser();
+
+  return !!user;
 }
