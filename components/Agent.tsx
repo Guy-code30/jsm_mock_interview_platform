@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
-import { useRouter } from 'next/router';
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { vapi } from '@/lib/vapi.sdk';
 
