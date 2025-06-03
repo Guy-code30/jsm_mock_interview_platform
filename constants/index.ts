@@ -1,210 +1,202 @@
 // import { CreateAssistantDTO } from "@vapi-ai/web/dist/api";
 // import { z } from "zod";
-
-
-export const generator = {
-  
-  name: "jsm_interview_prep",
-  nodes: [
-    {
-      name: "Conversation",
-      type: "conversation",
-      isStart: true,
-      metadata: {
-        position: {
-          x: -160.72456032156904,
-          y: -105.69047656126925
-        }
-      },
-      prompt: "Greet the user and help them create a new AI Interviewer",
-      model: {
-        provider: "openai",
-        model: "gpt-4o",
-        temperature: 0.7,
-        maxTokens: 1000
-      },
-      voice: {
-        model: "aura-2",
-        voiceId: "thalia",
-        provider: "deepgram"
-      },
-      variableExtractionPlan: {
-        output: [
-          {
-            title: "level",
-            description: "The job experience level. ",
-            type: "string",
-            enum: [
-              "entry",
-              "mid",
-              "senior"
-            ]
-          },
-          {
-            title: "amount",
-            description: "How many questions would you like to generate?\n",
-            type: "number",
-            enum: []
-          },
-          {
-            title: "techstack",
-            description: "A list of technologies to cover during the job interview. For example, React, Next.js, Express.js, Node and so on...",
-            type: "string",
-            enum: []
-          },
-          {
-            title: "role",
-            description: "What role would you like to train for? For example: Frontend, Backend, Fullstack, Design, UX?",
-            type: "string",
-            enum: []
-          },
-          {
-            title: "type",
-            description: "What type of the interview should it be?",
-            type: "string",
-            enum: [
-              "entry",
-              "mid",
-              "senior"
-            ]
-          }
-        ]
-      },
-      // "messagePlan": {
-      //   "firstMessage": ""
-      // }
-    },
-    {
-      name: "conversation_1748876036719",
-      type: "conversation",
-      metadata: {
-        position: {
-          x: -156.95805583551302,
-          y: 330.7514954985034
-        }
-      },
-      prompt: "Say that the interview will be generated shortly.",
-      model: {
-        provider: "openai",
-        model: "gpt-4o",
-        temperature: 0.7,
-        maxTokens: 1000
-      },
-      // "messagePlan": {
-      //   "firstMessage": ""
-      // }
-    },
-    {
-      name: "API Request",
-      type: "tool",
-      metadata: {
-        position: {
-          x: -158.841308078541,
-          y: 546.8529551239993
-        }
-      },
-      tool: {
-        type: "apiRequest",
-        function: {
-          name: "untitled_tool",
-          parameters: {
-            type: "object",
-            properties: {},
-            required: []
-          }
-        },
-        name: "",
-        url: `${process.env.NEXT_PUBLIC_BASE_URL}/api/vapi/generate`, // Update this to your actual API endpoint
-        method: "POST",
-        headers: null,
-        body: {
-          type: "object",
-          properties: {
-            role: {
-              type: "string",
-              description: "",
-              value: "{{ role }}"
-            },
-            type: {
-              type: "string",
-              description: "",
-              value: "{{ type }}"
-            },
-            level: {
-              type: "string",
-              description: "",
-              value: "{{ level }}"
-            },
-            amount: {
-              type: "number",
-              description: "",
-              value: "{{ amount }}"
-            },
-            userid: {
-              type: "string",
-              description: "",
-              value: "{{ userid }}"
-            },
-            techstack: {
-              type: "string",
-              description: "",
-              value: "{{ techstack }}"
-            }
-          },
-          "required": []
-        }
-      }
-    },
-    {
-      name: "conversation_1748877498325",
-      type: "conversation",
-      metadata: {
-        position: {
-          x: -160.2533957518788,
-          y: 818.5103559188213
-        }
-      },
-      prompt: "Thank the user for the conversation and inform them that the interview has been generated successfully.",
-      model: {
-        provider: "openai",
-        model: "gpt-4o",
-        temperature: 0.7,
-        maxTokens: 1000
-      },
-      // "messagePlan": {
-      //   "firstMessage": ""
-      // }
-    }
-  ],
-  edges: [
-    {
-      from: "Conversation",
-      to: "conversation_1748876036719",
-      condition: {
-        type: "ai",
-        prompt: "If user porvided all the required variables."
-      }
-    },
-    {
-      from: "conversation_1748876036719",
-      to: "API Request",
-      condition: {
-        type: "ai",
-        prompt: "if the user said yes"
-      }
-    },
-    {
-      from: "API Request",
-      to: "conversation_1748877498325",
-      condition: {
-        type: "ai",
-        prompt: ""
-      }
-    }
-  ],
-  globalPrompt: "Have a conversation with the user about their favorite type of AI agents. Your task is to collect data from the user. Remember that this is a voice conversation - do not use any special characters."
-}
-
+// const generator = {
+//   name: "jsm_interview_prep",
+//   nodes: [
+//     {
+//       name: "Conversation",
+//       type: "conversation",
+//       isStart: true,
+//       metadata: {
+//         position: {
+//           x: -160.72456032156904,
+//           y: -105.69047656126925,
+//         },
+//       },
+//       prompt:
+//         "Greet the user. Inform them that you will get some information from them, to create a perfect interview. Ask the caller for data required to extract. Ask the questions one by one and await an answer.",
+//       model: {
+//         model: "gpt-4o",
+//         provider: "openai",
+//         maxTokens: 1000,
+//         temperature: 0.7,
+//       },
+//       voice: {
+//         model: "aura-2",
+//         voiceId: "thalia",
+//         provider: "deepgram",
+//       },
+//       variableExtractionPlan: {
+//         output: [
+//           {
+//             enum: ["entry", "mid", "senior"],
+//             type: "string",
+//             title: "level",
+//             description: "The job experience level. ",
+//           },
+//           {
+//             enum: [],
+//             type: "number",
+//             title: "amount",
+//             description: "How many questions would you like to generate?\n",
+//           },
+//           {
+//             enum: [],
+//             type: "string",
+//             title: "techstack",
+//             description:
+//               "A list of technologies to cover during the job interview. For example, React, Next.js, Express.js, Node and so on...",
+//           },
+//           {
+//             enum: [],
+//             type: "string",
+//             title: "role",
+//             description:
+//               "What role would you like to train for? For example: Frontend, Backend, Fullstack, Design, UX?",
+//           },
+//           {
+//             enum: ["entry", "mid", "senior"],
+//             type: "string",
+//             title: "type",
+//             description: "What type of the interview should it be?",
+//           },
+//         ],
+//       },
+//       messagePlan: {
+//         firstMessage: "Hello",
+//       },
+//     },
+//     {
+//       name: "API Request",
+//       type: "tool",
+//       metadata: {
+//         position: {
+//           x: -157.48778679196144,
+//           y: 291.037431960464,
+//         },
+//       },
+//       tool: {
+//         url: "https://jsm-mock-interview-platform-xi.vercel.app/api/vapi/generate",
+//         body: {
+//           type: "object",
+//           required: [],
+//           properties: {
+//             role: {
+//               type: "string",
+//               value: "{{ role }}",
+//               description: "",
+//             },
+//             type: {
+//               type: "string",
+//               value: "{{ type }}",
+//               description: "",
+//             },
+//             level: {
+//               type: "string",
+//               value: "{{ level }}",
+//               description: "",
+//             },
+//             amount: {
+//               type: "number",
+//               value: "{{ amount }}",
+//               description: "",
+//             },
+//             userid: {
+//               type: "string",
+//               value: "{{ userid }}",
+//               description: "",
+//             },
+//             techstack: {
+//               type: "string",
+//               value: "{{ techstack }}",
+//               description: "",
+//             },
+//           },
+//         },
+//         name: "getUserData",
+//         type: "apiRequest",
+//         method: "POST",
+//         function: {
+//           name: "untitled_tool",
+//           parameters: {
+//             type: "object",
+//             required: [],
+//             properties: {},
+//           },
+//         },
+//         messages: [
+//           {
+//             type: "request-start",
+//             content: "Please hold on. I'm sending a request to the app.",
+//             blocking: true,
+//           },
+//           {
+//             role: "assistant",
+//             type: "request-complete",
+//             content:
+//               "The request has been sent and your interview has been generated. Thank you for the call! Bye!",
+//             endCallAfterSpokenEnabled: true,
+//           },
+//           {
+//             type: "request-failed",
+//             content:
+//               "Oops! Looks like something went wrong when sending the data to the app! Please try again.",
+//             endCallAfterSpokenEnabled: true,
+//           },
+//         ],
+//       },
+//     },
+//     {
+//       name: "hangup_1748973428231",
+//       type: "tool",
+//       metadata: {
+//         position: {
+//           x: -155.8105821193667,
+//           y: 560.6204275411557,
+//         },
+//       },
+//       tool: {
+//         type: "endCall",
+//         function: {
+//           name: "untitled_tool",
+//           parameters: {
+//             type: "object",
+//             required: [],
+//             properties: {},
+//           },
+//         },
+//         messages: [
+//           {
+//             type: "request-start",
+//             content:
+//               "Everything has been generated. I'll redirect you to the dashboard now, thanks for the call!",
+//             blocking: true,
+//           },
+//         ],
+//       },
+//     },
+//   ],
+//   edges: [
+//     {
+//       from: "Conversation",
+//       to: "API Request",
+//       condition: {
+//         type: "ai",
+//         prompt: "if user provided all the data to be extracted.",
+//       },
+//     },
+//     {
+//       from: "API Request",
+//       to: "hangup_1748973428231",
+//       condition: {
+//         type: "ai",
+//         prompt: "",
+//       },
+//     },
+//   ],
+//   globalPrompt:
+//     "You are a voice assistant helping with creating new AI Interviewers. Your task is to collect data from the user. Remember that this is a voice conversation - do not use any special characters.",
+// };
 
 export const mappings = {
   "react.js": "react",
@@ -350,7 +342,6 @@ export const mappings = {
 // Thank the candidate for their time.
 // Inform them that the company will reach out soon with feedback.
 // End the conversation on a polite and positive note.
-
 
 // - Be sure to be professional and polite.
 // - Keep all your responses short and simple. Use official language, but be kind and welcoming.

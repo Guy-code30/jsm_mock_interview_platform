@@ -5,7 +5,6 @@ import { cn } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { vapi } from '@/lib/vapi.sdk';
-import { generator } from '@/constants';
 
 
 
@@ -74,80 +73,51 @@ const Agent = ({ userName, userId, type }: AgentProps) => {
     }, [messages, callStatus, type, userId]);
 
 
+    const handleCall = async () => {
+        setCallStatus(CallStatus.CONNECTING);
+
+        await vapi.start(process.env.NEXT_PUBLIC_VAPI_WORKFLOW_ID!, {
+            variableValues: {
+                username: userName,
+                userid: userId,
+            }
+        });
+
+
+    }
+
+
     // const handleCall = async () => {
     //     setCallStatus(CallStatus.CONNECTING);
 
-    //     await vapi.start(process.env.NEXT_PUBLIC_VAPI_WORKFLOW_ID!, {
-    //         variableValues: {
-    //             username: userName,
-    //             userid: userId,
-    //         }
-    //     });
-
-
-    // }
-    // const handleCall = async () => {
-    //     setCallStatus(CallStatus.CONNECTING);
-
-    //     if (type === 'generate') {
+    //     if (type === "generate") {
     //         await vapi.start(process.env.NEXT_PUBLIC_VAPI_WORKFLOW_ID!, {
     //             variableValues: {
     //                 username: userName,
     //                 userid: userId,
     //             },
-    //             clientMessages: ["transcript"],
-    //             serverMessages: [],
-    //         },
-    //             undefined,
-    //             generator);
-
+    //         });
     //     } else {
     //         let formattedQuestions = "";
     //         if (questions) {
-    //             formattedQuestions = questions.map((questions) => `- ${questions}`).join('\n');
+    //             formattedQuestions = questions
+    //                 .map((question) => `- ${question}`)
+    //                 .join("\n");
     //         }
-    //         await vapi.start(interviewCovers, {
+
+    //         await vapi.start(interviewer, {
     //             variableValues: {
     //                 questions: formattedQuestions,
     //             },
-    //             clientMessages: ["transcript"],
-    //             serverMessages: [],
-    //         })
+    //         });
     //     }
-    // }
-
-
-    const handleCall = async () => {
-        setCallStatus(CallStatus.CONNECTING);
-
-        if (type === "generate") {
-            await vapi.start(process.env.NEXT_PUBLIC_VAPI_WORKFLOW_ID!, {
-                variableValues: {
-                    username: userName,
-                    userid: userId,
-                },
-            });
-        } else {
-            let formattedQuestions = "";
-            if (questions) {
-                formattedQuestions = questions
-                    .map((question) => `- ${question}`)
-                    .join("\n");
-            }
-
-            await vapi.start(interviewer, {
-                variableValues: {
-                    questions: formattedQuestions,
-                },
-            });
-        }
-    };
+    // };
 
 
 
-    const handleDisconnect = () => {
+    const handleDisconnect = async () => {
         setCallStatus(CallStatus.FINISHED);
-        vapi.stop();
+        await vapi.stop();
     }
 
     const latestMessage = messages[messages.length - 1]?.content || '';
