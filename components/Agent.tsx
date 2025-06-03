@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { vapi } from '@/lib/vapi.sdk';
+import { generator } from '@/constants';
 
 
 
@@ -25,6 +26,7 @@ const Agent = ({ userName, userId, type }: AgentProps) => {
     const [isSpeaking, setIsSpeaking] = useState(false);
     const [callStatus, setCallStatus] = useState<CallStatus>(CallStatus.INACTIVE);
     const [messages, setMessages] = useState<SavedMessage[]>([]);
+    const [lastMessage, setLastMessage] = useState<string>("");
 
     useEffect(() => {
         const onCallStart = () => setCallStatus(CallStatus.ACTIVE)
@@ -42,7 +44,10 @@ const Agent = ({ userName, userId, type }: AgentProps) => {
         const onSpeechStart = () => setIsSpeaking(true);
         const onSpeechEnd = () => setIsSpeaking(false);
 
-        const onError = (error: Error) => console.error('Error:', error);
+        const onError = (error: Error) => {
+            console.log('Error:', error);
+
+        }
 
 
         vapi.on('call-start', onCallStart);
@@ -69,20 +74,78 @@ const Agent = ({ userName, userId, type }: AgentProps) => {
     }, [messages, callStatus, type, userId]);
 
 
+    // const handleCall = async () => {
+    //     setCallStatus(CallStatus.CONNECTING);
+
+    //     await vapi.start(process.env.NEXT_PUBLIC_VAPI_WORKFLOW_ID!, {
+    //         variableValues: {
+    //             username: userName,
+    //             userid: userId,
+    //         }
+    //     });
+
+
+    // }
+    // const handleCall = async () => {
+    //     setCallStatus(CallStatus.CONNECTING);
+
+    //     if (type === 'generate') {
+    //         await vapi.start(process.env.NEXT_PUBLIC_VAPI_WORKFLOW_ID!, {
+    //             variableValues: {
+    //                 username: userName,
+    //                 userid: userId,
+    //             },
+    //             clientMessages: ["transcript"],
+    //             serverMessages: [],
+    //         },
+    //             undefined,
+    //             generator);
+
+    //     } else {
+    //         let formattedQuestions = "";
+    //         if (questions) {
+    //             formattedQuestions = questions.map((questions) => `- ${questions}`).join('\n');
+    //         }
+    //         await vapi.start(interviewCovers, {
+    //             variableValues: {
+    //                 questions: formattedQuestions,
+    //             },
+    //             clientMessages: ["transcript"],
+    //             serverMessages: [],
+    //         })
+    //     }
+    // }
+
+
     const handleCall = async () => {
         setCallStatus(CallStatus.CONNECTING);
 
-        await vapi.start(process.env.NEXT_PUBLIC_VAPI_WORKFLOW_ID!, {
-            variableValues: {
-                username: userName,
-                userid: userId,
+        if (type === "generate") {
+            await vapi.start(process.env.NEXT_PUBLIC_VAPI_WORKFLOW_ID!, {
+                variableValues: {
+                    username: userName,
+                    userid: userId,
+                },
+            });
+        } else {
+            let formattedQuestions = "";
+            if (questions) {
+                formattedQuestions = questions
+                    .map((question) => `- ${question}`)
+                    .join("\n");
             }
-        });
+
+            await vapi.start(interviewer, {
+                variableValues: {
+                    questions: formattedQuestions,
+                },
+            });
+        }
+    };
 
 
-    }
 
-    const handleDisconnect = async () => {
+    const handleDisconnect = () => {
         setCallStatus(CallStatus.FINISHED);
         vapi.stop();
     }
@@ -90,10 +153,6 @@ const Agent = ({ userName, userId, type }: AgentProps) => {
     const latestMessage = messages[messages.length - 1]?.content || '';
 
     const isCallInactiveOrFinished = callStatus === CallStatus.INACTIVE || callStatus === CallStatus.FINISHED;
-
-
-
-    const lastMessage = messages[messages.length - 1];
 
 
     return (

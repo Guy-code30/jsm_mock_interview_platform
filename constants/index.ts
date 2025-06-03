@@ -136,7 +136,7 @@ export const generator = {
               value: "{{ level }}"
             },
             amount: {
-              type: "string",
+              type: "number",
               description: "",
               value: "{{ amount }}"
             },
