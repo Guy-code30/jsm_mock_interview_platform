@@ -20,7 +20,7 @@ interface SavedMessage {
     content: string;
 }
 
-const Agent = ({ userName, userId, type }: AgentProps) => {
+const Agent = ({ userName, userId, type  }: AgentProps) => {
     const router = useRouter();
     const [isSpeaking, setIsSpeaking] = useState(false);
     const [callStatus, setCallStatus] = useState<CallStatus>(CallStatus.INACTIVE);
@@ -73,51 +73,47 @@ const Agent = ({ userName, userId, type }: AgentProps) => {
     }, [messages, callStatus, type, userId]);
 
 
-    const handleCall = async () => {
-        setCallStatus(CallStatus.CONNECTING);
 
-        await vapi.start(process.env.NEXT_PUBLIC_VAPI_WORKFLOW_ID!, {
-            variableValues: {
-                username: userName,
-                userid: userId,
-            }
-        });
+const handleCall = async () => {
+    setCallStatus(CallStatus.CONNECTING);
 
+    if (type === "generate") {
+      await vapi.start(
+        undefined,
+        {
+          variableValues: {
+            username: userName,
+            userid: userId,
+          },
+          clientMessages: ["transcript"],
+          serverMessages: [],
+        },
+        undefined,
+       process.env.NEXT_PUBLIC_VAPI_WORKFLOW_ID!
+      );
+    } else {
+      let formattedQuestions = "";
+      if (questions) {
+        formattedQuestions = questions
+          .map((question) => `- ${question}`)
+          .join("\n");
+      }
 
+      await vapi.start(interviewer, {
+        variableValues: {
+          questions: formattedQuestions,
+        },
+        clientMessages: ["transcript"],
+        serverMessages: [],
+      });
     }
-
-
-    // const handleCall = async () => {
-    //     setCallStatus(CallStatus.CONNECTING);
-
-    //     if (type === "generate") {
-    //         await vapi.start(process.env.NEXT_PUBLIC_VAPI_WORKFLOW_ID!, {
-    //             variableValues: {
-    //                 username: userName,
-    //                 userid: userId,
-    //             },
-    //         });
-    //     } else {
-    //         let formattedQuestions = "";
-    //         if (questions) {
-    //             formattedQuestions = questions
-    //                 .map((question) => `- ${question}`)
-    //                 .join("\n");
-    //         }
-
-    //         await vapi.start(interviewer, {
-    //             variableValues: {
-    //                 questions: formattedQuestions,
-    //             },
-    //         });
-    //     }
-    // };
+  };
 
 
 
     const handleDisconnect = async () => {
         setCallStatus(CallStatus.FINISHED);
-        await vapi.stop();
+        vapi.stop();
     }
 
     const latestMessage = messages[messages.length - 1]?.content || '';
