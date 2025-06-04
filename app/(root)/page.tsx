@@ -3,18 +3,18 @@ import { Link } from 'lucide-react';
 import React from 'react';
 import Image from 'next/image';
 import NextLink from 'next/link';
-import { dummyInterviews } from '@/constants';
 import InterviewCard from '@/components/ui/InterviewCard';
-import { getCurrentUser, getInterviewsByUserId, getLatestInterviews } from '@/lib/actions/auth.action';
+import { getInterviewsByUserId, getLatestInterviews } from '@/lib/actions/general.action';
+import { getCurrentUser } from '@/lib/actions/auth.action'
 
 const Page = async () => {
   const user = await getCurrentUser();
 
   const [userInterviews, latestInterviews] = await Promise.all([
     await getInterviewsByUserId(user?.id!),
-    await getLatestInterviews({userId: user?.id!})
+    await getLatestInterviews({ userId: user?.id! })
   ])
-  
+
 
 
 
@@ -53,9 +53,9 @@ const Page = async () => {
               <InterviewCard {...interview} key={interview.id} />
 
             ))) : (
-              <p>you haven&apos;t taken any interviews yet</p>
-            )
-      }
+            <p>you haven&apos;t taken any interviews yet</p>
+          )
+          }
         </div>
       </section>
       <section className="flex flex-col gap-6 mt-8">
@@ -66,9 +66,9 @@ const Page = async () => {
               <InterviewCard {...interview} key={interview.id} />
 
             ))) : (
-              <p>There are no new interviews available</p>
-            )
-      }
+            <p>There are no new interviews available</p>
+          )
+          }
         </div>
       </section>
     </>
