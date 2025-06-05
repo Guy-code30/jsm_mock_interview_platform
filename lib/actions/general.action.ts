@@ -1,3 +1,5 @@
+"use server";
+
 import { feedbackSchema } from "@/constants";
 import { db } from "@/firebase/admin";
 import { google } from "@ai-sdk/google";
@@ -54,7 +56,15 @@ export async function createFeedback(params: CreateFeedbackParams) {
       )
       .join("");
 
-    const { object: { totalScore, categoryScores, strengths, areasForImprovement, finalAssessment} } = await generateObject({
+    const {
+      object: {
+        totalScore,
+        categoryScores,
+        strengths,
+        areasForImprovement,
+        finalAssessment,
+      },
+    } = await generateObject({
       model: google("gemini-2.0-flash-001", {
         structuredOutputs: false,
       }),
@@ -71,19 +81,46 @@ export async function createFeedback(params: CreateFeedbackParams) {
         `,
       system: "You are a professional interviewer.",
     });
-    const feedback = await db.collection('feedback').add({
-        interviewId, userId, totalScore, categoryScores, strengths, areasForImprovement, finalAssessment,
-        createdAt: new Date().toISOString()
-    })
+    const feedback = await db.collection("feedback").add({
+      interviewId,
+      userId,
+      totalScore,
+      categoryScores,
+      strengths,
+      areasForImprovement,
+      finalAssessment,
+      createdAt: new Date().toISOString(),
+    });
 
     return {
-        success: true,  
-        feedbackId: feedback.id
-    }
-
+      success: true,
+      feedbackId: feedback.id,
+    };
   } catch (e) {
     console.error("Error saving feedback", e);
 
-    return { success: false}
+    return { success: false };
   }
+}
+
+export async function getFeedbackByInterviewId(
+  params: GetFeedbackByInterviewIdParams
+): Promise<Feedback | null> {
+  const { interviewId, userId } = params;
+
+  const feedback = await db
+    .collection("feedback")
+    .where("interviewId", "==", interviewId)
+    .where("userId", "==", userId)
+    .limit(1)
+    .get();
+
+  if (feedback.empty) return null;
+
+  const feedbackDoc = feedback.docs[0];
+
+  return {
+    id: feedbackDoc.id,
+    ...feedbackDoc.data(),
+  } as Feedback;
 }

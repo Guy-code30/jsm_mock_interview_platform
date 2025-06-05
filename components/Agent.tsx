@@ -72,14 +72,14 @@ const Agent = ({ userName, userId, type, interviewId, questions  }: AgentProps) 
         console.log('Generate feedback here.');
 
 
-        const { success, feedbackId }= await createFeedback({
+        const { success, feedbackId: id }= await createFeedback({
             interviewId: interviewId!,
             userId: userId!,
             transcript: messages
         })
 
-        if(success && id ) {
-            router.push(`/interview/${interviewId}/feeback`);
+        if(success && id) {
+            router.push(`/interview/${interviewId}/feedback`);
         } else {
             console.log('Error saving feeback');
             router.push('/')
